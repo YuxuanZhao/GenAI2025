@@ -184,3 +184,84 @@
     <td>每一个 layer 其实就是往 residual stream 里加了点什么，那加的是什么呢？我们可以把 MLP 看作是 key-value memories，也就是 attention。我们可以找到某一层的输入的其中一个神经元的v，减去正确答案的 token embedding，再加上想要的答案的 token embedding，就有机会改变答案成想要的</td>
   </tr>
 <table>
+
+## Mamba
+
+<table>
+  <tr>
+    <td rowspan="4">RNN-style</td>
+    <td>Hidden state</td>
+    <td>决定下一个时刻的结果的全部信息</td>
+  </tr>
+  <tr>
+    <td>LSTM</td>
+    <td>决定上一时刻的 hidden state (forget gate)，这一时刻的输入 x (input gate) 和这一时刻的输出(output gate) 都和当前的时刻有关，也就是 3 个 gate</td>
+  </tr>
+  <tr>
+    <td>线性</td>
+    <td>不能平行运算，因为必须计算之前所有的 hidden state 才能算，需要等的话 GPU 的效果就很差，但是计算量和memory需求比较固定</td>
+  </tr>
+  <tr>
+    <td>类比大模型 memory</td>
+    <td>初始的 hidden state 相当于 memory，input gate 是 write，output gate 是 read，forget gate 是 reflect</td>
+  </tr>
+
+  <tr>
+    <td rowspan="4">Self Attention</td>
+    <td>过程</td>
+    <td>输入x进来，变换成qkv，然后q和k做attention score，softmax 之后加权和v</td>
+  </tr>
+  <tr>
+    <td>attention is all you need paper</td>
+    <td>证明拿掉所有其他的东西效果还很好</td>
+  </tr>
+  <tr>
+    <td>缺点</td>
+    <td>attention 的问题在于序列越长，计算越困难，memory也占用更大</td>
+  </tr>
+  <tr>
+    <td>优点</td>
+    <td>训练的时候更好地平行化使用 GPU 的性能，给完整输入，生成每个 token 是平行的</td>
+  </tr>
+
+  <tr>
+    <td rowspan="11">平行化 RNN</td>
+    <td>Mamba v1</td>
+    <td>不要 forget gate 了，直接把上一时刻的 hidden state 拿过来，可以用 scan algorithm 的方法来加速</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Linear Attention</td>
+    <td>如果reflect 这一步用的矩阵可以用 D = vk 来表示，那么我们发现这个简化后的 RNN 现在就类似于 self attention 没有 softmax</td>
+  </tr>
+  <tr>
+    <td>v 和 k 是什么，v 是要写入 memory 的内容，k 决定要写进哪里，q 决定从哪个 column 取出多少的信息</td>
+  </tr>
+  <tr>
+    <td>训练的时候像 self attention，inference 的时候像 RNN（更快）</td>
+  </tr>
+
+  <tr>
+    <td rowspan="2">为什么 linear attention 效果差于 self attention?</td>
+    <td>不是因为 linear attention 只有有限的记忆，因为 transformer 也有问题。如果 query 的长度（一般是4096）小于序列的长度（一般远超 4096），那么 query 不想要的信息也会被拿到，因为 d 维空间里只能有 d 个垂直的向量，softmax 之后就会把这些不想要的地方也加权和了</td>
+  </tr>
+  <tr>
+    <td>差在 softmax，linear attention 缺失了 forget gate 就永远不会遗忘了。softmax 使得模型能够保存更重要的事情，因为重要性是对比出来的，本来重要的事情在更重要的事情出现之后就不重要了</td>
+  </tr>
+
+  <tr>
+    <td rowspan="5">改进</td>
+    <td>retention network：乘上一个 gamma 来做遗忘</td>
+  </tr>
+  <tr>
+    <td>gated retention (Mamba 2): 不是每一件事都均匀随着时间遗忘，而是用sigmoid(Wx)</td>
+  </tr>
+  <tr>
+    <td>更复杂的 reflection：elementwise 乘上 hidden state</td>
+  </tr>
+  <tr>
+    <td>DeltaNet：在放新的信息之前，先清除掉一部分之前的信息，这样可能更好地记住当前的信息</td>
+  </tr>
+  <tr>
+    <td>Titans (Learning to Memorize at Test Time): hidden state 一般被认为是 memory，但是这里的操作实际上类似于做 gradient descent，hidden state 可能是一种特殊的 parameter？loss 这个时候在优化的是用 kt 取资料的时候，取出来的东西和 vt 越接近越好</td>
+  </tr>
+<table>
