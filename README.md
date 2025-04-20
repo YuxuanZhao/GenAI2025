@@ -90,11 +90,6 @@
 
 ## How LLM works?
 
-网络：
-输入一个token序列，转换成embedding，通过layer变成另外的embedding，类似的layer很多层之后最后一个向量做unembedding，输出token的概率分布
-
-
-
 <table>
   <tr>
     <td rowspan="6">一个神经元</td>
@@ -121,7 +116,6 @@
     <td>为什么不是1:1的？</td>
     <td>因为这样能干的事就太少了，参数量不够</td>
   </tr>
-
 
   <tr>
     <td rowspan="8">一层网络</td>
@@ -150,5 +144,43 @@
   </tr>
   <tr>
     <td>Claude 3 Sonnet 找了三千四百万个功能向量：debug, 金门大桥, AI 觉得自己是 AI，sycophancy</td>
+  </tr>
+
+  <tr>
+    <td rowspan="4">一群神经元</td>
+    <td>GPT 整个网络</td>
+    <td>输入一个 token 序列，转换成 embedding，通过 layer 变成另外的 embedding，类似的 layer 很多层之后最后一个向量做 unembedding，输出 token 的概率分布</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Circuit</td>
+    <td>语言模型的模型，需要 faithfulness，也就是尽可能类似于原本的语言模型，但是要更小更简单，来更容易理解完成某个任务时的背后机制是什么</td>
+  </tr>
+  <tr>
+    <td>这样有用吗？可以用这个简单模型帮助模型编辑，也就是找到给 embedding 加上 delta x 来达到我们想要的输出</td>
+  </tr>
+  <tr>
+    <td>怎么找到这个模型呢？大量的 pruning 直到一目了然，只需要保持关心的能力没有改变（答案还是保持不变的）</td>
+  </tr>
+
+  <tr>
+    <td rowspan="5">模型解释自己的想法</td>
+    <td>high level</td>
+    <td>直接问模型为什么这么想</td>
+  </tr>
+  <tr>
+    <td>logic lens</td>
+    <td>在中间的层过 softmax 之前做 unembedding 得到 distribution。llama2 的 inner speech 是英文，输入输出都会先转换成英文进行思考</td>
+  </tr>
+  <tr>
+    <td>Patchscopes</td>
+    <td>logic lens 只能是一个 token 的 representation，也就是预测下一个 token。用对应关系来看输入的内容在模型的理解是什么</td>
+  </tr>
+  <tr>
+    <td>Back Patching</td>
+    <td>类似于 reasoning 的想法，嵌套的逻辑关系如果来不及在一次 feed forward 里得到清楚，那就把后层输出的结果直接丢回到前层</td>
+  </tr>
+  <tr>
+    <td>MLP = Key-value memories</td>
+    <td>每一个 layer 其实就是往 residual stream 里加了点什么，那加的是什么呢？我们可以把 MLP 看作是 key-value memories，也就是 attention。我们可以找到某一层的输入的其中一个神经元的v，减去正确答案的 token embedding，再加上想要的答案的 token embedding，就有机会改变答案成想要的</td>
   </tr>
 <table>
