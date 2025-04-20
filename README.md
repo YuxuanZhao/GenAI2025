@@ -87,3 +87,68 @@
     <td>实际尝试的代价可能很低，这个时候其实不需要想那么久</td>
   </tr>
 <table>
+
+## How LLM works?
+
+网络：
+输入一个token序列，转换成embedding，通过layer变成另外的embedding，类似的layer很多层之后最后一个向量做unembedding，输出token的概率分布
+
+
+
+<table>
+  <tr>
+    <td rowspan="6">一个神经元</td>
+    <td>数值</td>
+    <td>一个token对应的embedding的向量，经过FC和relu之后的其中一个数值（很大的值代表被启动）</td>
+  </tr>
+  <tr>
+    <td>相关性不是因果性</td>
+    <td>移掉就没有某种表现就证明有因果性（永远设成0或者平均值）</td>
+  </tr>
+  <tr>
+    <td>程度</td>
+    <td>不同启动的等级会不会体现在行为上（更脏的脏话），很少研究这个因为很难定义什么是更脏的脏话</td>
+  </tr>
+  <tr>
+    <td>一件事由很多神经元共同管理</td>
+    <td>不容易解释单一神经元的功能（单复数神经元也只是有影响，但不是完全控制）</td>
+  </tr>
+  <tr>
+    <td>单一神经元可能管很多事</td>
+    <td>某种神经元排列控制一件事</td>
+  </tr>
+  <tr>
+    <td>为什么不是1:1的？</td>
+    <td>因为这样能干的事就太少了，参数量不够</td>
+  </tr>
+
+
+  <tr>
+    <td rowspan="8">一层网络</td>
+    <td>行为</td>
+    <td>每个layer都有一层self attention layer，之后这个sequence的每个token的embedding变成一个向量，每个向量经过很多个MLP输出最后才得到结果</td>
+  </tr>
+  <tr>
+    <td rowspan="4">representation engineering, activation engineering, activation steering</td>
+    <td>抽取拒绝向量：观察到的向量 = 拒绝向量 + 其他向量的平均，找到没有拒绝的其他向量的平均，就可以算出来拒绝向量</td>
+  </tr>
+  <tr>
+    <td>验证拒绝向量：在正常问题中加上这个拒绝向量，看看会不会拒绝。在需要拒绝的问题中减去拒绝向量，看看会不会通过</td>
+  </tr>
+  <tr>
+    <td>in-context vector: context是同义词，反义词，首字母等。把例子的最后输出平均值当作 in-context vector，接到 zero-shot 问题后面模型就会做出相同的处理</td>
+  </tr>
+  <tr>
+    <td>其他例子：sycophancy vector 谄媚向量，truthful vector 说真话向量</td>
+  </tr>
+  <tr>
+    <td rowspan="3">Sparse Auto Encoder</td>
+    <td>找出来某一层所有的功能向量：假设向量是k个功能向量的加权和</td>
+  </tr>
+  <tr>
+    <td>一个不是这些功能向量的其他向量应该尽可能的小。同时为避免模型找到一个one hot trivial solution，所有的权重越小越好</td>
+  </tr>
+  <tr>
+    <td>Claude 3 Sonnet 找了三千四百万个功能向量：debug, 金门大桥, AI 觉得自己是 AI，sycophancy</td>
+  </tr>
+<table>
