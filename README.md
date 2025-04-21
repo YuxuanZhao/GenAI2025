@@ -392,3 +392,37 @@ in Large Transformer Models 的公式算法，GPT2 Like 一个 Transformer Block
     <td>Lossy compression can be 8B or less, even binary</td>
   </tr>
 </table>
+
+## Post-training
+
+<table>
+  <tr>
+    <td rowspan="7">post-training</td>
+    <td>pretrain/SFT</td>
+    <td>foundation model 不一定是 pretrained model，也可以是 chat/instruct model。post-training 也不一定是 alignment</td>
+  </tr>
+  <tr>
+    <td>catastrophic forgetting</td>
+    <td>会遗忘 safety alignment 和其他的能力，和模型大小没什么关系</td>
+  </tr>
+  <tr>
+    <td>LoRA</td>
+    <td>遗忘得少了，但是学得也少，未来发展的方向会有更多不同专长的模型，比如说特别会编程的模型不会写唐诗是可以接受的，但是基本的沟通和模型间的指令应该要保持</td>
+  </tr>
+  <tr>
+    <td>Experience Replay</td>
+    <td>混一点 3-5% 之前的训练资料就好，没有训练资料的时候使用语言模型产生一点 QA 就好</td>
+  </tr>
+  <tr>
+    <td>foundation model reparaphrase</td>
+    <td>用 reparaphrase 数据来训练模型，效果会比直接用好</td>
+  </tr>
+  <tr>
+    <td>self-output</td>
+    <td>让模型/其他更好的模型产生/修改答案，如果答案是对的就拿来用（其实有点类似于 RL）</td>
+  </tr>
+  <tr>
+    <td>放弃学不会的</td>
+    <td>在 post-train 的时候如果某一个 token 模型很难预测出来（概率分布的偏差很大），直接放弃学这个 token，但是前后的那些 token 仍然正常学</td>
+  </tr>
+</table>
