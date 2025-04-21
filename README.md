@@ -86,7 +86,7 @@
     <td>danger of overthinking</td>
     <td>实际尝试的代价可能很低，这个时候其实不需要想那么久</td>
   </tr>
-<table>
+</table>
 
 ## How LLM works?
 
@@ -183,7 +183,7 @@
     <td>MLP = Key-value memories</td>
     <td>每一个 layer 其实就是往 residual stream 里加了点什么，那加的是什么呢？我们可以把 MLP 看作是 key-value memories，也就是 attention。我们可以找到某一层的输入的其中一个神经元的v，减去正确答案的 token embedding，再加上想要的答案的 token embedding，就有机会改变答案成想要的</td>
   </tr>
-<table>
+</table>
 
 ## Mamba
 
@@ -264,7 +264,7 @@
   <tr>
     <td>Titans (Learning to Memorize at Test Time): hidden state 一般被认为是 memory，但是这里的操作实际上类似于做 gradient descent，hidden state 可能是一种特殊的 parameter？loss 这个时候在优化的是用 kt 取资料的时候，取出来的东西和 vt 越接近越好</td>
   </tr>
-<table>
+</table>
 
 ## Pretrain & Alignment/Finetune (SFT & RLHF)
 
@@ -321,4 +321,74 @@
     <td>RLHF</td>
     <td>因为逼迫模型做它不想做的事情是很难的(SFT)，但是它做得好的时候给它奖励(RL)就比较可行</td>
   </tr>
+</table>
+
+## 训练 LLM
+
 <table>
+  <tr>
+    <td rowspan="10">Mulit_GPU</td>
+    <td rowspan="4">DeepSpeed - Zero Redundancy Optimizer (ZERO)</td>
+    <td>Zero-1: shard optimizer (Momentum, Variance)</td>
+  </tr>
+  <tr>
+    <td>Zero-2: shard optimizer, gradient, FP32 parameters</td>
+  </tr>
+  <tr>
+    <td>Zero-3: shard optimizer, gradient, FP32/ FP16 parameters</td>
+  </tr>
+  <tr>
+    <td>GPU 可以使用 NVLink 来互传信息，有 900 GB/s，会有 overhead，但是不会太夸张</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Offload</td>
+    <td>Optimizer Offload: GPU 只放 FP16 parameters，其他的全部放在 CPU</td>
+  </tr>
+  <tr>
+    <td>Optimizer + model Offload: 所有的都放在 CPU，只给 GPU 传输需要的</td>
+  </tr>
+  <tr>
+    <td rowspan="2">大语言模型到底有多大</td>
+    <td>fp32: 8 * 10 ** 9 * 32 = 32 GB，使用 Adam optimizer 的话，Momentum 32 GB，Variance 32 GB</td>
+  </tr>
+  <tr>
+    <td>fp16 (GPU): 8 * 10 ** 9 * 16 = 16 GB，gradient 和 weight 一样大：16 GB</td>
+  </tr>
+  <tr>
+    <td>gradient accumulation</td>
+    <td>mini batch 先不更新，直到做到我们想要的一个 batch 大小再更新，batch size 一般来说要足够大，一般一个 batch 里面需要有 40-60M token (DeepSeek V3, batch size 1920, 32k context)</td>
+  </tr>
+  <tr>
+    <td>gradient checkpointing</td>
+    <td>activation recomputation：只存必要的 important activation，需要用的时候再 recompute</td>
+  </tr>
+
+  <tr>
+    <td rowspan="6">Long Context</td>
+    <td rowspan="3">activation memory</td>
+    <td>在做 back propagation 的时候，需要保存 attention weight 和 feed forward 的计算值，所以输入很长的时候（16k）训练需要非常大的空间</td>
+  </tr>
+  <tr>
+    <td>參考 ultra scale playbook 或者 nvidia 在 2022 發表的 Reducing Activation Recomputation
+in Large Transformer Models 的公式算法，GPT2 Like 一个 Transformer Block 的 Activation 需要 34sbh + 5as^2b bytes memory (s: tokens, b: batch, h: hidden, a: heads)，LLama3 8B hidden size: 4096, heads: 32，所以 Layer 需要 34sbh + 5as^2b = 34 * 16384 * 1 * 4096 + 5 * 32 * 16384^2 * 1 = 2.125 GB + 40GB</td>
+  </tr>
+  <tr>
+    <td>Attention Activation 是 11sbh + 5as^2b，而 FeedFoward + Layer Norm 是 23sbh，所以更精确的 Attention 是 40.6875 GB 而 FeedForward + Layer Norm 是 1.4375 GB</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Flash Attention 3</td>
+    <td>所需 vRAM 更少：因为优化了暂时不用的放在 CPU RAM，空间复杂度从 O(N**2) => O(N)</td>
+  </tr>
+  <tr>
+    <td>training 更快：使用 Fused Kernel 把矩阵乘法，mask，softmax，dropout的操作全部压缩在一起</td>
+  </tr>
+  <tr>
+    <td>Liger Kernel</td>
+    <td>LLM 常用的操作 fuse 成一个优化后的 Triton 代码: 因为速度上 Pytorch < torch.compile() < Triton < CUDA</td>
+  </tr>
+  <tr>
+    <td>Small vRAM inference</td>
+    <td>Quantization</td>
+    <td>Lossy compression can be 8B or less, even binary</td>
+  </tr>
+</table>
