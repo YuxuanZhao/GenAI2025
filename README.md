@@ -265,3 +265,60 @@
     <td>Titans (Learning to Memorize at Test Time): hidden state 一般被认为是 memory，但是这里的操作实际上类似于做 gradient descent，hidden state 可能是一种特殊的 parameter？loss 这个时候在优化的是用 kt 取资料的时候，取出来的东西和 vt 越接近越好</td>
   </tr>
 <table>
+
+## Pretrain & Alignment/Finetune (SFT & RLHF)
+
+<table>
+  <tr>
+    <td rowspan="5">Pretrain</td>
+    <td rowspan="3">挑数据</td>
+    <td>rephrase web 更适合训练模型 (Apple)，一定要去重，尽量看不同的资料，同样的资料很快就会 converge（超过4次就有明显区别）</td>
+  </tr>
+  <tr>
+    <td>pretrain 的时候如果一个人只有一个描述，那么模型很有可能会有误解。如果类似的描述有多个，模型就会搞清楚（需要 second opinion）</td>
+  </tr>
+  <tr>
+    <td>而且不需要每个人的描述都有多个，只需要有一些是这样的就行。模型就明白原来要这样理解！
+  </td>
+  </tr>
+  <tr>
+    <td>数据量</td>
+    <td>资料越多越好：LLAMA3，Deepseek v3 15T token = FineWeb HuggingFace</td>
+  </tr>
+  <tr>
+    <td>数据清洗的重要性</td>
+    <td>shift cipher 1, 3, 13 encode 在 pretrain data 里都有比较多，pretrain 里学了很多不该学的，alignment 也只能压抑输入的激发，那些脏话还是存在于neuron中难以清除</td>
+  </tr>
+  <tr>
+    <td rowspan="8">Alignment</td>
+    <td rowspan="2">挑数据</td>
+    <td>质量的定义：越长越好，用好模型回答是最有效的 (相当于distillation，弱智吧都行)</td>
+  </tr>
+  <tr>
+    <td>Alignment 的内容应当是模型本来知道的知识，使用模型不知道的内容进行 finetune 会立刻开始 overfit，能力下降。Maybe known 的资料是最有用的（要用正确问法才能问到正确答案），不要在 alignment 的时候还去教模型新的信息</td>
+  </tr>
+  <tr>
+    <td>数据量</td>
+    <td>很少的数据，画龙点睛。为啥呢？其实模型的行为在 alignment 之后的差异很小（一步错步步错，不会停）</td>
+  </tr>
+  <tr>
+    <td>挑问题</td>
+    <td>问题不重要，不是问题也没事，没有问题也没事</td>
+  </tr>
+  <tr>
+    <td>不 finetune，直接修改</td>
+    <td>增加结束符号的几率，更改某些符号的出现几率，避免出现重复内容</td>
+  </tr>
+  <tr>
+    <td>Self-rewarding language Models</td>
+    <td>让模型给自己的同一问题的不同回答打分</td>
+  </tr>
+  <tr>
+    <td>极限</td>
+    <td>finetune 看起来像模像样，但是实际上是错的内容</td>
+  </tr>
+  <tr>
+    <td>RLHF</td>
+    <td>因为逼迫模型做它不想做的事情是很难的(SFT)，但是它做得好的时候给它奖励(RL)就比较可行</td>
+  </tr>
+<table>
