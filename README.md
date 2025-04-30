@@ -426,3 +426,65 @@ in Large Transformer Models 的公式算法，GPT2 Like 一个 Transformer Block
     <td>在 post-train 的时候如果某一个 token 模型很难预测出来（概率分布的偏差很大），直接放弃学这个 token，但是前后的那些 token 仍然正常学</td>
   </tr>
 </table>
+
+## Reasoning (test-time compute 的一种)
+
+<table>
+  <tr>
+    <td rowspan="4">不用微调参数</td>
+    <td>supervised CoT</td>
+    <td>prompt 写得更长，更精确，先列出解题过程，再给出答案（few/ zero shot）</td>
+  </tr>
+  <tr>
+    <td rowspan="3">给模型推理的工作流程</td>
+    <td>parallel: 问同一个模型同一个问题，Large Language Monkeys</td>
+  </tr>
+  <tr>
+    <td>sequential: 根据之前的解法再解一次，结合 parallel 和 sequential 可以得到一棵树，进而使用 monte carlo tree search/ beam search</td>
+  </tr>
+  <tr>
+    <td>怎么知道哪个是正确的？<br>
+    - Majority Vote (Self consistency) 非常强的 baseline<br>
+    - Confidence<br>
+    - Verifier: 是一个语言模型 (Best of N)，可以训练一下 input + ground truth<br>
+    - Process verifier: 让模型解到底，然后看回来某个公共的 step 有多少几率能够得到正确最终结果，拟合这个几率</td>
+  </tr>
+
+  <tr>
+    <td rowspan="10">需要微调参数</td>
+    <td rowspan="4">教模型推理的过程 imitation learning</td>
+    <td>SFT: 我们需要有 input + reasoning + ground truth 的数据：语言模型生成 reasoning</td>
+  </tr>
+  <tr>
+    <td>RL: 没有 ground truth 甚至可以用语言模型生成 answer，用 verifier 检查</td>
+  </tr>
+  <tr>
+    <td>journey learning > shortcut learning: 检查每个 step 是不是对的，但是这样不好，因为如果训练的时候没有见过错误的思考步骤，模型就不知道应该检查自己的思考过程</td>
+  </tr>
+  <tr>
+    <td>knowledge distillation: 学习 reasoning model 的输出</td>
+  </tr>
+
+  <tr>
+    <td rowspan="2">结果导向地学习推理 RL (Accuracy as reward)</td>
+    <td>DeepSeek R1 Zero: 答案对就行，推理过程不重要，+Majority Vote 16 次就有非常好的效果</td>
+  </tr>
+  <tr>
+    <td>但是 reasoning readability 非常差，因为只用了结果来衡量</td>
+  </tr>
+
+  <tr>
+    <td rowspan="3">DeepSeek R1 训练过程</td>
+    <td>DeepSeek v3 base =(Accuracy as reward)=> DeepSeek R1 Zero =(zero-/few- shot long CoT + human annotation)=> answers with reflection and verification</td>
+  </tr>
+  <tr>
+    <td>DeepSeek v3 base =(Imitation Learning)=> model A =(RL Accuracy, language coherence)=> model B => generate many reasoning and answer for same question, verified by DeepSeek v3</td>
+  </tr>
+  <tr>
+    <td>DeepSeek v3 base =(Imitation Learning)=> Model C =(RL Safety, Helpfulness)=> DeepSeek R1</td>
+  </tr>
+  <tr>
+    <td>Foundation model 很重要</td>
+    <td>因为 RL 是强化模型本身的能力，参数少本身能力有限的话，RL 远不如 Distill 有效（因为模型本身产不出正确答案的时候 RL 没用）</td>
+  </tr>
+</table>
