@@ -487,4 +487,41 @@ in Large Transformer Models 的公式算法，GPT2 Like 一个 Transformer Block
     <td>Foundation model 很重要</td>
     <td>因为 RL 是强化模型本身的能力，参数少本身能力有限的话，RL 远不如 Distill 有效（因为模型本身产不出正确答案的时候 RL 没用）</td>
   </tr>
+
+  <tr>
+    <td rowspan="3">Reasoning 长度要合适</td>
+    <td>Chain of Draft</td>
+    <td>对应 CoT，直接改变 prompt 要求模型输出的每一个 thinking step 都只是一个 5 字 draft</td>
+  </tr>
+
+  <tr>
+    <td>给模型推理的工作流程 + imitation learning</td>
+    <td>同一个输入，在模型所有的正确回答中选择 reasoning 过程最短的作为 training data</td>
+  </tr>
+
+  <tr>
+    <td>max RL</td>
+    <td>在原本 RL 的基础上，要求长度为 N，reasoning 过程小于等于 N 都可以接受，超过则有惩罚</td>
+  </tr>
+
+  <tr>
+    <td rowspan="4">衡量 Reasoning 能力</td>
+    <td>GSM8K</td>
+    <td>记住了部分问题和答案，换一下人名，数字，reorder 句子，模型就不会了</td>
+  </tr>
+
+  <tr>
+    <td>ARC-AGI</td>
+    <td>找规律题，准确率改善最慢的标准，但是 o3 有突破</td>
+  </tr>
+
+  <tr>
+    <td>Chatbot Arena</td>
+    <td>人类对输出的风格是有倾向的(比如喜欢emoji)，用 Elo Score 来预计模型的战力，考虑模型实力以外的因素(Style and Sentiment Control)</td>
+  </tr>
+
+  <tr>
+    <td>Goodhart's law</td>
+    <td>一个指标一旦当成目标，这个指标的衡量效果就变坏了</td>
+  </tr>
 </table>
