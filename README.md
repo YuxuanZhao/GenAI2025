@@ -525,3 +525,46 @@ in Large Transformer Models 的公式算法，GPT2 Like 一个 Transformer Block
     <td>一个指标一旦当成目标，这个指标的衡量效果就变坏了</td>
   </tr>
 </table>
+
+## Model Editing
+
+<table>
+  <tr>
+    <td>对比 post training</td>
+    <td>post training 学会的是新技能（语言，工具，推理）</td>
+    <td>editing 植入一项知识（少量数据和改动），post training 做 model editing 容易学歪了</td>
+  </tr>
+  <tr>
+    <td rowspan="3">目标</td>
+    <td>Reliability</td>
+    <td>目标要达成</td>
+  </tr>
+  <tr>
+    <td>Generalization</td>
+    <td>paraphrase, reverse, portability</td>
+  </tr>
+  <tr>
+    <td>Locality</td>
+    <td>不影响其他的问题的答案</td>
+  </tr>
+  <tr>
+    <td>不改参数</td>
+    <td>in context knowledge editing (IKE)</td>
+    <td>直接提供的话模型不一定会采纳，可以用 one-shot/ few-shot，里面包含 reliability, generalization, locality 的例子</td>
+  </tr>
+  <tr>
+    <td rowspan="4">改变参数</td>
+    <td>人类决定: Rank-One Model Editing (ROME)</td>
+    <td>找到神经网络中最相关的部分，修改这个部分的参数（不需要 gradient descent，是一个 closed-form solution）</td>
+  </tr>
+  <tr>
+    <td rowspan="3">模型决定</td>
+    <td>编辑模型(Hypernetwork)返回一个待编辑模型参数大小的结果，给待编辑模型的参数直接加上这个结果。这个思路是 Meta Learning，可以把这两个模型理解成合在一起，那这个结果其实是中间某一层的输出，冻住待编辑模型的参数，只训练编辑模型</td>
+  </tr>
+  <tr>
+    <td>但是对于大型的语言模型来说这样的输出结果太大了不好训练，实际上paper里会设计一个 loss 和相应的 gradient descent，训练一个神经网络接受这个 gradient 输出需要编辑的参数变化</td>
+  </tr>
+  <tr>
+    <td>但连这个神经网络都很难训练，参数量大到不可能。MEND 将 gradient 拆成 uv，这样的话神经网络只需要更新 uv 就好。但为什么 gradient 可以拆成 uv？有数学证明</td>
+  </tr>
+</table>
